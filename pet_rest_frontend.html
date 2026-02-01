@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+	  const URL = "http://localhost:8000/";
+	
+    function getAllPetNames() { 
+      var request = new XMLHttpRequest();
+      request.open("GET", URL, false);
+      request.send(null);
+      return JSON.parse(request.responseText);
+    }
+
+    function getPetData(name) {
+      var request = new XMLHttpRequest();
+      request.open("GET", URL + name, false);
+      request.send(null);
+      return JSON.parse(request.responseText);
+    }
+
+    function getAllPetsWithData() {
+      var result = [];
+
+      var pets = getAllPetNames();
+      for (var pet of pets) {
+        var data = getPetData(pet);
+        result.push({name: pet, ...data})
+      }
+
+      return result;
+    }
+
+    function addNewPet(name, data) {
+      var request = new XMLHttpRequest();
+      request.open("POST", URL+name, false);
+      request.send(JSON.stringify(data));
+      return request.responseText;
+    }
+    
+    function V5() { 
+	    var request = new XMLHttpRequest();
+      request.open("POST", URL+"Chirpy", false);
+      request.send(JSON.stringify({species: "Bird", breed: "Parakeet", age: 30}));
+      setIH("v5",request.responseText);
+    }
+
+    function createPetFormSubmit() {
+      var name = document.getElementById("name").value;
+      var species = document.getElementById("species").value;
+      var breed = document.getElementById("breed").value;
+      var age = document.getElementById("age").value;
+      
+      addNewPet(name, {species: species, breed: breed, age: age});
+      
+      document.getElementById("createPetForm").reset();
+
+      load();
+    }
+
+    function deletePet(name) {
+      var request = new XMLHttpRequest();
+      request.open("DELETE", URL + name, false);
+      request.send(null);
+      // return JSON.parse(request.responseText);
+
+      load();
+    }
+
+    function load() {
+      document.getElementById("petTable").innerHTML = "";
+
+      var allPets = getAllPetNames();
+
+      var table = document.createElement("table");
+      var tableBody = document.createElement("tbody");
+
+      var tableHeader = document.createElement("tr");
+      
+      var nameHeader = document.createElement("th");
+      var nameHeaderText = document.createTextNode("Name");
+      nameHeader.appendChild(nameHeaderText);
+
+      var speciesHeader = document.createElement("th");
+      var speciesHeaderText = document.createTextNode("Species");
+      speciesHeader.appendChild(speciesHeaderText);
+
+      var breedHeader = document.createElement("th");
+      var breedHeaderText = document.createTextNode("Breed");
+      breedHeader.appendChild(breedHeaderText);
+
+      var ageHeader = document.createElement("th");
+      var ageHeaderText = document.createTextNode("Age");
+      ageHeader.appendChild(ageHeaderText);
+
+      tableHeader.appendChild(nameHeader);
+      tableHeader.appendChild(speciesHeader);
+      tableHeader.appendChild(breedHeader);
+      tableHeader.appendChild(ageHeader);
+
+      tableBody.appendChild(tableHeader);
+
+      for (var pet of allPets) {
+        var data = getPetData(pet);
+
+        var row = document.createElement("tr");
+
+        var nameCell = document.createElement("td");
+        var nameCellText = document.createTextNode(pet);
+        nameCell.appendChild(nameCellText);
+
+        var speciesCell = document.createElement("td");
+        var speciesCellText = document.createTextNode(data.species);
+        speciesCell.appendChild(speciesCellText);
+
+        var breedCell = document.createElement("td");
+        var breedCellText = document.createTextNode(data.breed);
+        breedCell.appendChild(breedCellText);
+
+        var ageCell = document.createElement("td");
+        var ageCellText = document.createTextNode(data.age)
+        ageCell.appendChild(ageCellText);
+
+        var deleteCell = document.createElement("td");
+        var deleteCellButton = document.createElement("button");
+        deleteCellButton.setAttribute("data-pet", pet);
+        deleteCellButton.onclick = function() {
+          var petToDelete = this.getAttribute("data-pet");
+          deletePet(petToDelete);
+        };
+        deleteCellButton.innerText = "Delete";
+        deleteCell.appendChild(deleteCellButton);
+
+        row.appendChild(nameCell);
+        row.appendChild(speciesCell);
+        row.appendChild(breedCell);
+        row.appendChild(ageCell);
+        row.appendChild(deleteCell);
+
+        tableBody.appendChild(row);
+      }
+
+      table.appendChild(tableBody);
+      document.getElementById("petTable").appendChild(table);
+    }
+
+    </script>
+  </head>
+  <body id="body" onload="load()">
+    <div id="petTable"></div>
+    <form id="createPetForm" onsubmit="createPetFormSubmit()">
+      <label for="name">Name:</label><br>
+      <input type="text" id="name" name="name"><br>
+      <label for="species">Species:</label><br>
+      <input type="text" id="species" name="species"><br>
+      <label for="breed">Breed:</label><br>
+      <input type="text" id="breed" name="breed"><br>
+      <label for="age">Age:</label><br>
+      <input type="text" id="age" name="age"><br>
+      <input type="submit" value="Add">
+    </form>
+  </body>
+</html>
